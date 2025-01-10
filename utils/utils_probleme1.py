@@ -246,36 +246,6 @@ def generate_pair(duration, distance, dtheta, dp):
 #############################################      DATASET       ################################################
 #################################################################################################################
 #################################################################################################################
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-
-class UNetPerceptron(nn.Module):
-    def __init__(self, n_channels, n_antenna_pairs, size=64):
-        super(UNetPerceptron, self).__init__()
-        self.unet = UNet1D(n_channels, size)  # Réutilisation de l'UNet1D
-        self.n_classes = 1  # Une seule sortie : le taux de pluie
-
-        # Perceptrons pour chaque paire d'antennes
-        self.perceptrons = nn.ModuleList([nn.Linear(size, self.n_classes) for _ in range(n_antenna_pairs)])
-
-    def forward(self, x, k):
-        """
-        x : batch d'entrées, de forme (batch_size, channels, time_steps)
-        k : identifiant de la paire d'antennes pour sélectionner le perceptron
-        """
-        # Passage à travers l'UNet
-        unet_output = self.unet(x)
-
-        # L'UNet donne une sortie de forme (batch_size, size, time_steps)
-        # On doit extraire une dimension (par exemple, la moyenne temporelle) avant de passer au perceptron
-        unet_output = unet_output.mean(dim=2)  # Moyenne temporelle pour obtenir une sortie de forme (batch_size, size)
-
-        # Application du perceptron spécifique à la paire d'antennes k
-        perceptron_output = self.perceptrons[k](unet_output)
-
-        return perceptron_output
-
 
 
 
